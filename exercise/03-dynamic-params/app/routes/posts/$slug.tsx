@@ -2,10 +2,14 @@ import { LoaderArgs, json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { getPost } from "~/models/post.server";
 import { marked } from "marked";
+import invariant from 'tiny-invariant';
 
 export const loader = async ({ params }: LoaderArgs) => {
   const { slug } = params;
-  const post = slug ? await getPost(slug) : null;
+
+  invariant(slug, 'Post not found');
+
+  const post = await getPost(slug);
 
   return json({ post });
 };
@@ -13,15 +17,7 @@ export const loader = async ({ params }: LoaderArgs) => {
 export default function Posts() {
   const { post } = useLoaderData<typeof loader>();
 
-  if (!post) {
-    return (
-      <main className="mx-auto max-w-4xl">
-        <h1 className="my-6 text-center text-3xl">
-          Not found
-        </h1>
-      </main>
-    )
-  }
+  invariant(post, 'Post not found');
 
   const html = marked(post.markdown);
 
